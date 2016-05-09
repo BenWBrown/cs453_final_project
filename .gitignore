@@ -1,3 +1,5 @@
 *.o
 *.exe
 main
+ao/*
+mpg123/*
