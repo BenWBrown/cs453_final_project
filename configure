@@ -1,0 +1,14 @@
+#! /bin/sh
+cd ./ao
+./configure
+make
+make install
+cd ../
+
+cd ./mpg123
+./configure
+make
+make install
+cd ../
+
+make
