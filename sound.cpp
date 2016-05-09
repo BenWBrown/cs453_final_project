@@ -4,13 +4,17 @@
  */
 
 
+#include <stdlib.h>
 #include "ao/include/ao/ao.h"
 #include "mpg123/src/libmpg123/mpg123.h"
+#include <iostream>
+#include <pthread.h>
 
 #define BITS 8
 
-int play(char *name)
+void *play(void *uncastName)
 {
+    char *name = (char *) uncastName;
     mpg123_handle *mh;
     unsigned char *buffer;
     size_t buffer_size;
@@ -46,8 +50,10 @@ int play(char *name)
     dev = ao_open_live(driver, &format, NULL);
 
     /* decode and play */
-    while (mpg123_read(mh, buffer, buffer_size, &done) == MPG123_OK)
+    while (mpg123_read(mh, buffer, buffer_size, &done) == MPG123_OK) {
+        printf("audio ");
         ao_play(dev, (char *) buffer, done);
+    }
 
     /* clean up */
     free(buffer);
@@ -57,5 +63,14 @@ int play(char *name)
     mpg123_exit();
     ao_shutdown();
 
+    pthread_exit(NULL);
     return 0;
+}
+
+int async_play(const char *name){
+  pthread_t thread;
+  int rc;
+  rc = pthread_create(&thread, NULL, play, (void *) name);
+
+  return 0;
 }

@@ -15,6 +15,5 @@ all: $(BIN)
 $(BIN): $(OBJ)
 	$(CC) -o $(BIN) $(OBJ) $(LDLIBS) $(SOUNDLIBS)
 
-
 clean:
 	rm -f $(BIN) $(OBJ) core*

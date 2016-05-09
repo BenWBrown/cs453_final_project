@@ -6,37 +6,54 @@
 #include <stdio.h>
 #include "opencv2/opencv.hpp"
 #include "sound.h"
+#include <unistd.h>
 
 using namespace cv;
 using namespace std;
 
 const char *win = "video";
+const char *snare = "snare.mp3";
 
-int main()
-{
-    int cam = 0; // default camera
-    int key;
-    VideoCapture cap(cam);
-    if (!cap.isOpened()) {
-	fprintf(stderr, "cannot open camera %d\n", cam);
-	exit(1);
-    }
+ int main()
+ {
+     int cam = 0; // default camera
+     int key;
+     VideoCapture cap(cam);
+     if (!cap.isOpened()) {
+ 	fprintf(stderr, "cannot open camera %d\n", cam);
+ 	exit(1);
+     }
 
-     namedWindow(win, 0);
-    Mat frame;
-    while (1) {
-        cap >> frame;
-        //DO STUFF WITH frame here
-        imshow(win, frame);
-        key = waitKey(30);
-        if (key == 107) {
-          play("snare.mp3");
-        } else if (key >= 0) {
-          break;
-        }
-    }
-    imwrite("frame.png", frame);
+      namedWindow(win, 0);
+     Mat frame;
+     while (1) {
+         cap >> frame;
+         //DO STUFF WITH frame here
+         imshow(win, frame);
+         key = waitKey(30);
+         if (key == 107) {
+           async_play(snare);
+         } else if (key >= 0) {
+           break;
+         }
+     }
+     imwrite("frame.png", frame);
 
-    return 0;
+     return 0;
 
-}
+ }
+
+// int main() {
+//   printf("playing\n");
+//   async_play("snare.mp3");
+//   usleep(500000);
+//   async_play("snare2.mp3");
+//   usleep(500000);
+//   async_play("snare3.mp3");
+//   usleep(500000);
+//   async_play("snare4.mp3");
+//
+//   usleep(3000000);
+//   printf("done sleeping\n");
+//   return 0;
+// }
