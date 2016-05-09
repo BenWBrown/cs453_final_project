@@ -39,7 +39,4 @@ int main()
 
     return 0;
 
-  int key = waitKey(0);
-    printf("%d\n", key);
-
 }
