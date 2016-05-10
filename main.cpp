@@ -32,9 +32,12 @@ const char *win = "video";
          //DO STUFF WITH frame here
          imshow(win, frame);
          key = waitKey(30);
-         if (key == 107) {
+         if (key == 106) {
+           soundPlayer->async_play("snare2.mp3");
+         } else if (key == 107) {
            soundPlayer->async_play("snare.mp3");
          } else if (key >= 0) {
+           printf("%d\n", key);
            break;
          }
      }
