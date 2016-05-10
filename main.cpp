@@ -12,7 +12,6 @@ using namespace cv;
 using namespace std;
 
 const char *win = "video";
-const char *snare = "snare.mp3";
 
  int main()
  {
@@ -24,6 +23,8 @@ const char *snare = "snare.mp3";
  	exit(1);
      }
 
+     SoundPlayer *soundPlayer = new SoundPlayer();
+
       namedWindow(win, 0);
      Mat frame;
      while (1) {
@@ -32,12 +33,14 @@ const char *snare = "snare.mp3";
          imshow(win, frame);
          key = waitKey(30);
          if (key == 107) {
-           async_play(snare);
+           soundPlayer->async_play("snare.mp3");
          } else if (key >= 0) {
            break;
          }
      }
-     imwrite("frame.png", frame);
+     //imwrite("frame.png", frame);
+     soundPlayer->clean();
+     free(soundPlayer);
 
      return 0;
 
