@@ -7,6 +7,7 @@
 #include "opencv2/opencv.hpp"
 #include "sound.h"
 #include <unistd.h>
+#include "tracker.h"
 
 using namespace cv;
 using namespace std;
@@ -27,9 +28,18 @@ const char *win = "video";
 
       namedWindow(win, 0);
      Mat frame;
+     KeyPoint keypoints[4];
+    //  for (int i = 0; i < 4; i++) {
+    //    keypoints[i] = new KeyPoint();
+    //  }
+     int sound;
      while (1) {
          cap >> frame;
-         //DO STUFF WITH frame here
+         //TODO: convert to grayscale
+         sound = track(frame, keypoints);
+         if(0) {
+           soundPlayer->async_play("snare.mp3");
+         }
          imshow(win, frame);
          key = waitKey(30);
          if (key == 106) {
@@ -41,7 +51,7 @@ const char *win = "video";
            break;
          }
      }
-     //imwrite("frame.png", frame);
+     imwrite("frame.png", frame);
      soundPlayer->clean();
      free(soundPlayer);
 
