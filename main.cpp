@@ -36,7 +36,7 @@ const char *win = "video";
      while (1) {
          cap >> frame;
          //TODO: convert to grayscale
-         sound = track(frame, keypoints);
+         sound = track(&frame, keypoints);
          if(0) {
            soundPlayer->async_play("snare.mp3");
          }
@@ -50,6 +50,7 @@ const char *win = "video";
            printf("%d\n", key);
            break;
          }
+
      }
      imwrite("frame.png", frame);
      soundPlayer->clean();
