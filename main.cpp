@@ -16,6 +16,7 @@ const char *win = "video";
 
  int main()
  {
+      SoundPlayer soundPlayer;
      int cam = 0; // default camera
      int key;
      VideoCapture cap(cam);
@@ -23,29 +24,22 @@ const char *win = "video";
  	fprintf(stderr, "cannot open camera %d\n", cam);
  	exit(1);
      }
+     namedWindow(win, 0);
 
-     SoundPlayer *soundPlayer = new SoundPlayer();
-
-      namedWindow(win, 0);
      Mat frame;
      KeyPoint keypoints[4];
-    //  for (int i = 0; i < 4; i++) {
-    //    keypoints[i] = new KeyPoint();
-    //  }
+
      int sound;
      while (1) {
          cap >> frame;
          //TODO: convert to grayscale
-         sound = track(&frame, keypoints);
-         if(0) {
-           soundPlayer->async_play("snare.mp3");
-         }
+         //sound = track(&frame, keypoints);
          imshow(win, frame);
          key = waitKey(30);
          if (key == 106) {
-           soundPlayer->async_play("snare2.mp3");
+           soundPlayer.async_play("snare2.mp3");
          } else if (key == 107) {
-           soundPlayer->async_play("snare.mp3");
+           soundPlayer.async_play("snare.mp3");
          } else if (key >= 0) {
            printf("%d\n", key);
            break;
@@ -53,8 +47,9 @@ const char *win = "video";
 
      }
      imwrite("frame.png", frame);
-     soundPlayer->clean();
-     free(soundPlayer);
+
+     //TODO: this segfaults. idk why
+     soundPlayer.clean();
 
      return 0;
 
