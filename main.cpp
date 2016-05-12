@@ -28,28 +28,32 @@ const char *win = "video";
 
      Mat frame;
      KeyPoint keypoints[4];
+   	keypoints[0].pt.x = 0.0;
+   	keypoints[1].pt.x = 0.0;
 
      int sound;
      while (1) {
          cap >> frame;
-         //TODO: convert to grayscale
-         //sound = track(&frame, keypoints);
-         imshow(win, frame);
-         key = waitKey(30);
-         if (key == 106) {
-           soundPlayer.async_play("snare2.mp3");
-         } else if (key == 107) {
-           soundPlayer.async_play("snare.mp3");
-         } else if (key >= 0) {
-           printf("%d\n", key);
-           break;
-         }
+         if (!frame.empty()) {
+           //TODO: convert to grayscale
+           sound = track(&frame, keypoints);
+           imshow(win, frame);
+           key = waitKey(30);
+           if (key == 106) {
+             soundPlayer.async_play("snare2.mp3");
+           } else if (key == 107) {
+             soundPlayer.async_play("snare.mp3");
+           } else if (key >= 0) {
+             printf("%d\n", key);
+             break;
+           }
+       }
 
      }
      imwrite("frame.png", frame);
 
      //TODO: this segfaults. idk why
-     soundPlayer.clean();
+     //soundPlayer.clean();
 
      return 0;
 

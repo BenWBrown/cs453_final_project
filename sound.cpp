@@ -78,47 +78,64 @@ void *SoundPlayer::play(void *uncastName) {
   string strName(name);
   map<string,int>::iterator it;
 
-  it = names.find(strName);
+  /* open the file and get the decoding format */
+  mpg123_open(mh, name);
+  mpg123_getformat(mh, &rate, &channels, &encoding);
 
-  //if this file hasn't been loaded before
-  if (it == names.end()) {
+/* set the output format and open the output device */
+  format.bits = mpg123_encsize(encoding) * BITS;
+  format.rate = rate;
+  format.channels = channels;
+  format.byte_format = AO_FMT_NATIVE;
+  format.matrix = "L,R";
+  dev = ao_open_live(driver, &format, NULL);
 
-    cout << "new file" << endl << strName << endl;
+  mpg123_read(mh, buffers[lastBuffer], buffer_size, &done);
+  ao_play(dev, (char *) buffers[lastBuffer], done);
 
-    //add filename to map
-    lastBuffer++;
-    names[strName] = lastBuffer;
+  /*************************************************/
 
-    /* open the file and get the decoding format */
-    mpg123_open(mh, name);
-    if (!fileOpened) {
-      mpg123_getformat(mh, &rate, &channels, &encoding);
-
-    /* set the output format and open the output device */
-      format.bits = mpg123_encsize(encoding) * BITS;
-      format.rate = rate;
-      format.channels = channels;
-      format.byte_format = AO_FMT_NATIVE;
-      format.matrix = "L,R";
-      fileOpened = 1;
-    }
-    dev = ao_open_live(driver, &format, NULL);
-
-    mpg123_read(mh, buffers[lastBuffer], buffer_size, &done);
-    sizes[strName] = done;
-    ao_play(dev, (char *) buffers[lastBuffer], done);
-
-  } else { //file has been loaded before. play the correct buffer
-
-    cout << strName << endl;
-    int buffNum = names.at(strName);
-    size_t size = sizes.at(strName);
-
-    cout << "buffNum: " << buffNum << " size; " << size << endl;
-
-    dev = ao_open_live(driver, &format, NULL);
-    ao_play(dev, (char *) buffers[buffNum], size);
-  }
+  // it = names.find(strName);
+  //
+  // //if this file hasn't been loaded before
+  // if (it == names.end()) {
+  //
+  //   cout << "new file" << endl << strName << endl;
+  //
+  //   //add filename to map
+  //   lastBuffer++;
+  //   names[strName] = lastBuffer;
+  //
+  //   /* open the file and get the decoding format */
+  //   mpg123_open(mh, name);
+  //   if (!fileOpened) {
+  //     mpg123_getformat(mh, &rate, &channels, &encoding);
+  //
+  //   /* set the output format and open the output device */
+  //     format.bits = mpg123_encsize(encoding) * BITS;
+  //     format.rate = rate;
+  //     format.channels = channels;
+  //     format.byte_format = AO_FMT_NATIVE;
+  //     format.matrix = "L,R";
+  //     fileOpened = 1;
+  //   }
+  //   dev = ao_open_live(driver, &format, NULL);
+  //
+  //   mpg123_read(mh, buffers[lastBuffer], buffer_size, &done);
+  //   sizes[strName] = done;
+  //   ao_play(dev, (char *) buffers[lastBuffer], done);
+  //
+  // } else { //file has been loaded before. play the correct buffer
+  //
+  //   cout << strName << endl;
+  //   int buffNum = names.at(strName);
+  //   size_t size = sizes.at(strName);
+  //
+  //   cout << "buffNum: " << buffNum << " size; " << size << endl;
+  //
+  //   dev = ao_open_live(driver, &format, NULL);
+  //   ao_play(dev, (char *) buffers[buffNum], size);
+  // }
 
   return NULL;
 }
@@ -151,6 +168,7 @@ void SoundPlayer::clean(void) {
 }
 
 void *helperFunction(void *x) {
+  printf("helperfunction called");
   struct thread_data *data = (struct thread_data *) x;
   SoundPlayer *p = data->player;
   p->play(data->name);

@@ -9,6 +9,8 @@ using namespace cv;
 using namespace std;
 
 int track(Mat *frame, KeyPoint *keypoints) {
+	Point2f diff1, diff2;
+	float size, angle;
 	Mat image, big;
 	int ballz;
 	KeyPoint temp1, temp2;
@@ -22,7 +24,7 @@ int track(Mat *frame, KeyPoint *keypoints) {
 	blur(*frame, big, Size(75, 75));
 
 	resize(big, image, Size(round(0.5*big.cols), round(0.5*big.rows)), 0.5, 0.5);
-	
+
 	// convert image to HSV
 	cvtColor(image, image, COLOR_BGR2HSV);
 	Mat lower_red_hue_range, upper_red_hue_range;
@@ -30,32 +32,32 @@ int track(Mat *frame, KeyPoint *keypoints) {
 	inRange(image, Scalar(160, 100, 100), Scalar(179, 255 ,255), upper_red_hue_range);
 	addWeighted(lower_red_hue_range, 1.0, upper_red_hue_range, 1.0, 0.0, image);
 
-	
+
 	image.convertTo(image, -1, -1, 255); // rtype=-1 (same result type), scale=-1, offset=255
 
 	// Setup SimpleBlobDetector parameters.
 	SimpleBlobDetector::Params params;
-	 
+
 	// Change thresholds
 	//params.minThreshold = 10;
 	//params.maxThreshold = 200;
-	 
+
 	// Filter by Area.
 	params.filterByArea = true;
 	params.minArea = 800;
-	 
+
 	// Filter by Circularity
 	params.filterByCircularity = true;
 	params.minCircularity = 0.45;
-	 
+
 	// Filter by Convexity
 	params.filterByConvexity = true;
 	params.minConvexity = 0.85;
-	 
+
 	// Filter by Inertia
 	params.filterByInertia = true;
 	params.minInertiaRatio = 0.01;
-	
+
 
 	// Set up detector with params
 	SimpleBlobDetector detector(params);
@@ -71,15 +73,15 @@ int track(Mat *frame, KeyPoint *keypoints) {
 	//
 	vector<KeyPoint> keypointsVector;
 	detector.detect(image, keypointsVector);
-	
+
 	printf("original keypoints (%f, %f,) and (%f, %f)\n", temp1.pt.x, temp1.pt.y, temp2.pt.x, temp2.pt.y);
 //	printf("new keypoints (%f, %f,) and (%f, %f) and (%f, %f)\n", keypointsVector[0].pt.x, keypointsVector[0].pt.y, keypointsVector[1].pt.x, keypointsVector[1].pt.y);
 	//
 	//
 	drawKeypoints(image, keypointsVector, *frame, Scalar(0,0,255), DrawMatchesFlags::DRAW_RICH_KEYPOINTS );
 
-	Point2f diff1, diff2;
-	float size, angle;
+	printf("drew keypoints\n");
+
 	for (int i = 0; i < keypointsVector.size(); i++) {
 		diff1.x = keypoints[0].pt.x - keypointsVector[i].pt.x;
 		diff1.y = keypoints[0].pt.y - keypointsVector[i].pt.y;
@@ -87,7 +89,7 @@ int track(Mat *frame, KeyPoint *keypoints) {
 		diff2.y = keypoints[1].pt.y - keypointsVector[i].pt.y;
 		size = sqrt(diff1.x*diff1.x + diff1.y*diff1.y);
 		angle = atan(diff1.y/diff1.x);
-		//printf("new kp (%f, %f) - diffsize %f / angle %f\n", keypointsVector[i].pt.x, keypointsVector[i].pt.y, size, angle);
+		printf("new kp (%f, %f) - diffsize %f / angle %f\n", keypointsVector[i].pt.x, keypointsVector[i].pt.y, size, angle);
 		if (((diff1.x > 1.0) || (diff1.x < -1.0)) && size < 100) {
 			keypoints[0] = KeyPoint(keypointsVector[i].pt, 1, -1);
 			printf("* new keypoint added (%f, %f) @ size %f, %f\n", keypoints[0].pt.x, keypoints[0].pt.y, size, angle);
@@ -102,15 +104,18 @@ int track(Mat *frame, KeyPoint *keypoints) {
 		angle = 0;
 		}
 	}
-	if (keypoints[0].pt.x == 0.0) {
-//		printf("should update keypoints 0\n");
-		keypoints[0] = keypointsVector[0];
-			printf("new keypoint added (%f, %f)\n", keypoints[0].pt.x, keypoints[0].pt.y);
-	}
-	if (keypoints[1].pt.x == 0.0) {
-//		printf("should update keypoints 1\n");
-		keypoints[1] = keypointsVector[1];
-			printf("new keypoint added (%f, %f)\n", keypoints[1].pt.x, keypoints[1].pt.y);
+	printf("loop over\n");
+	if (keypointsVector.size() > 0) {
+		if (keypoints[0].pt.x == 0.0) {
+	//		printf("should update keypoints 0\n");
+			keypoints[0] = keypointsVector[0];
+				printf("new keypoint added (%f, %f)\n", keypoints[0].pt.x, keypoints[0].pt.y);
+		}
+		if (keypoints[1].pt.x == 0.0) {
+	//		printf("should update keypoints 1\n");
+			keypoints[1] = keypointsVector[1];
+				printf("new keypoint added (%f, %f)\n", keypoints[1].pt.x, keypoints[1].pt.y);
+		}
 	}
 	return 0;
 }
@@ -149,6 +154,6 @@ int main(int argc, char** argv) {
 	track(&frame, keypoints);
 	imshow("Display window", frame );                   // Show our image inside it.
 	waitKey(0);
-	
+
 }
 */
