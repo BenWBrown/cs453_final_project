@@ -74,8 +74,13 @@ int track(Mat *frame, TrackedPoint trackedPoints[], long frameNum) {
 	//check if previously seen blob hasn't been seen in over FRAME_THRESH frames
 	//and reset it if so
 	for (int i = 0; i < NUM_PTS; i++) {
-		if ((trackedPoints[i].frameNum != 0) && (trackedPoints[i].frameNum - frameNum > FRAME_THRESH))
+		if ((trackedPoints[i].frameNum != 0) && (frameNum - trackedPoints[i].frameNum > FRAME_THRESH)) {
+			printf("frameNum: %lu\n", frameNum);
+			printf("trackedPoints[i].frameNum : %lu\n", trackedPoints[i].frameNum );
+			printf("about to reset\n x: %d\n", trackedPoints[i].x);
 			resetPoint(&trackedPoints[i]);
+			printf("x: %d\n", trackedPoints[i].x);
+		}
 	}
 
 	vector<int> freeTrackingPoints;
@@ -86,6 +91,10 @@ int track(Mat *frame, TrackedPoint trackedPoints[], long frameNum) {
 		if (trackedPoints[i].x == 0 && trackedPoints[i].y == 0) {
 			freeTrackingPoints.push_back(i);
 		}
+	}
+
+	if ((trackedPoints[0].x == trackedPoints[1].x) && (trackedPoints[0].y == trackedPoints[1].y)) {
+		resetPoint(&trackedPoints[1]);
 	}
 
 	//match keypoints to tracked points
@@ -103,7 +112,7 @@ int track(Mat *frame, TrackedPoint trackedPoints[], long frameNum) {
 
 				//check if need to play drum sound
 				//went from going fast to going slow
-				if (trackedPoints[i].moving && ((velocitySquared < LO_THRESH*LO_THRESH) || (abs(trackedPoints[i].angle - angle) > 1))) {
+				if (trackedPoints[i].moving && (velocitySquared < LO_THRESH*LO_THRESH) ) {
 					printf("drum = 1");
 					drum = 1;
 				}

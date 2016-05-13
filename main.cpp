@@ -47,7 +47,7 @@ const char *win = "video";
            //TODO: convert to grayscale
            sound = track(&frame, trackedPoints, frameNum);
            imshow(win, frame);
-           key = waitKey(30);
+           key = waitKey(5);
            if (sound == 1) {
              printf("tracked\n");
              //printf("\a");
@@ -59,7 +59,7 @@ const char *win = "video";
            if (key == 106) {
              async_play("snare2.mp3");
            } else if (key == 107) {
-             play((void*) "snare.mp3");
+             async_play((void*) "snare.mp3");
            } else if (key >= 0) {
              printf("%d\n", key);
              break;
