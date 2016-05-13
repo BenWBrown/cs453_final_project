@@ -98,10 +98,12 @@ int track(Mat *frame, TrackedPoint trackedPoints[], long frameNum) {
 				vx = ((float) (trackedPoints[i].x - keypointsVector[j].pt.x)) / (frameNum - trackedPoints[i].frameNum);
 				vy = ((float) (trackedPoints[i].y - keypointsVector[j].pt.y)) / (frameNum - trackedPoints[i].frameNum);
 				velocitySquared = vx*vx + vy*vy;
+				
+				angle = atan2(vy, vx);
 
 				//check if need to play drum sound
 				//went from going fast to going slow
-				if (trackedPoints[i].moving && (velocitySquared < LO_THRESH*LO_THRESH)) {
+				if (trackedPoints[i].moving && ((velocitySquared < LO_THRESH*LO_THRESH) || (abs(trackedPoints[i].angle - angle) > 1))) {
 					printf("drum = 1");
 					drum = 1;
 				}
@@ -120,6 +122,7 @@ int track(Mat *frame, TrackedPoint trackedPoints[], long frameNum) {
 				trackedPoints[i].vx = vx;
 				trackedPoints[i].vy = vy;
 				trackedPoints[i].frameNum = frameNum;
+				trackedPoints[i].angle = angle;
 			}
 		}
 	}

@@ -11,6 +11,7 @@ typedef struct {
   int y;
   float vx;
   float vy;
+  float angle;
   long frameNum;
   bool moving;
 } TrackedPoint;
