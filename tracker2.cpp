@@ -62,7 +62,7 @@ int track(Mat *frame, TrackedPoint trackedPoints[], long frameNum) {
 	vector<KeyPoint> keypointsVector;
 	detector.detect(image, keypointsVector);
 
-	drawKeypoints(image, keypointsVector, *frame, Scalar(0,0,255), DrawMatchesFlags::DRAW_RICH_KEYPOINTS );
+	drawKeypoints(frame, keypointsVector, *frame, Scalar(0,0,255), DrawMatchesFlags::DRAW_RICH_KEYPOINTS );
 
 	//debug output
 	// if (keypointsVector.size() > 0)
@@ -113,8 +113,13 @@ int track(Mat *frame, TrackedPoint trackedPoints[], long frameNum) {
 				//check if need to play drum sound
 				//went from going fast to going slow
 				if (trackedPoints[i].moving && (velocitySquared < LO_THRESH*LO_THRESH) ) {
-					printf("drum = 1");
-					drum = 1;
+					if (trackedPoints[i].x < frame.cols/2) {
+						printf("drum = 1");
+						drum = 1;
+					} else {
+						printf("drum = 2");
+						drum = 2;
+					}
 				}
 
 				printf("i: %d velocity: %f\n",i,  sqrt(velocitySquared));
