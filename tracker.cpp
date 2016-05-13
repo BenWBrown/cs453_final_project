@@ -4,23 +4,18 @@
 //#include "sound.h"
 #include <unistd.h>
 #include "tracker.h"
+#include <stdlib.h>
 
 using namespace cv;
 using namespace std;
-
-#define ABS(a) ((a) < 0 ? (-(a)) : (a))
-
 
 int track(Mat *frame, KeyPoint *keypoints) {
 	Point2f diff1, diff2;
 	float size, angle;
 	Mat image, big;
-	int ballz, drum = 0;
-	KeyPoint temp1, temp2;
+	int ballz;
 	ballz = 2;
 
-	temp1 = keypoints[0];
-	temp2 = keypoints[1];
 	//Mat img = imread("ball1.jpg", 1); //testing image
 
 	// blur img
@@ -77,31 +72,45 @@ int track(Mat *frame, KeyPoint *keypoints) {
 	vector<KeyPoint> keypointsVector;
 	detector.detect(image, keypointsVector);
 
-	printf("original keypoints (%f, %f, s%f, a%f) and (%f, %f, s%f, a%f)\n", keypoints[0].pt.x, keypoints[0].pt.y, keypoints[0].size, keypoints[0].angle, keypoints[1].pt.x, keypoints[1].pt.y, keypoints[1].size, keypoints[1].angle);
+	//printf("original keypoints (%f, %f,) and (%f, %f)\n", temp1.pt.x, temp1.pt.y, temp2.pt.x, temp2.pt.y);
 //	printf("new keypoints (%f, %f,) and (%f, %f) and (%f, %f)\n", keypointsVector[0].pt.x, keypointsVector[0].pt.y, keypointsVector[1].pt.x, keypointsVector[1].pt.y);
 	//
 	//
 	drawKeypoints(image, keypointsVector, *frame, Scalar(0,0,255), DrawMatchesFlags::DRAW_RICH_KEYPOINTS );
 
-	printf("drew keypoints\n");
-	
-	
+	//printf("drew keypoints\n");
+
+	int drum = 0;
+	int oldAngle0, oldAngle1;
+
+	oldAngle0 = keypoints[0].angle;
+	oldAngle1 = keypoints[1].angle;
+
+	if (keypointsVector.size() > 0) {
+		keypoints[2] = keypointsVector[0];
+		if (keypointsVector.size() > 1) {
+			keypoints[3] = keypointsVector[1];
+		}
+	}
+
 
 	for (int i = 0; i < keypointsVector.size(); i++) {
 		diff1.x = keypoints[0].pt.x - keypointsVector[i].pt.x;
 		diff1.y = keypoints[0].pt.y - keypointsVector[i].pt.y;
 		diff2.x = keypoints[1].pt.x - keypointsVector[i].pt.x;
 		diff2.y = keypoints[1].pt.y - keypointsVector[i].pt.y;
+
+
 		size = sqrt(diff1.x*diff1.x + diff1.y*diff1.y);
 		angle = atan2(diff1.y, diff1.x);
-		printf("new kp (%f, %f) - diffsize %f / angle %f\n", keypointsVector[i].pt.x, keypointsVector[i].pt.y, size, angle);
-		// found a keypoint match to previous frame
+		//printf("new kp (%f, %f) - diffsize %f / angle %f\n", keypointsVector[i].pt.x, keypointsVector[i].pt.y, size, angle);
+
+
 		if (((diff1.x > 1.0) || (diff1.x < -1.0)) && size < 100) {
+			printf("if1 called\n");
 			keypoints[2] = KeyPoint(keypointsVector[i].pt, size, angle);
-			printf("* keypoint 1 changed (%f, %f) @ size %f, %f\n", keypoints[0].pt.x, keypoints[0].pt.y, size, angle);
-			if ((ABS(angle - keypoints[0].angle) > 1.0) && (size > 10.0)){
-				drum = 1;
-			} else if ((keypoints[0].size > 15.0) && (size < 10.0)) {
+			//printf("* new keypoint added (%f, %f) @ size %f, %f\n", keypoints[0].pt.x, keypoints[0].pt.y, size, angle);
+			if (abs(angle - oldAngle0) > 1) {
 				drum = 1;
 			}
 		}
@@ -110,36 +119,39 @@ int track(Mat *frame, KeyPoint *keypoints) {
 		//printf("new kp (%f, %f) - diffsize %f / angle %f\n", keypointsVector[i].pt.x, keypointsVector[i].pt.y, size, angle);
 		if (((diff2.x > 1.0) || (diff2.x < -1.0)) && size < 100) {
 			keypoints[3] = KeyPoint(keypointsVector[i].pt, size, angle);
-			printf("* keypoint 2 changed (%f, %f) @ size %f, %f\n", keypoints[1].pt.x, keypoints[1].pt.y, size, angle);
-			if ((ABS(angle - keypoints[1].angle) > 1.0) && (size > 10.0)){
-				drum = 2;
-			} else if ((keypoints[1].size > 15.0) && (size < 10.0)) {
-				drum = 2;
+			//printf("* new keypoint added (%f, %f) @ size %f, %f\n", keypoints[1].pt.x, keypoints[1].pt.y, size, angle);
+			if (abs(angle - oldAngle1) > 1) {
+				drum = 1;
 			}
-		}
 		size = 0;
 		angle = 0;
-	}
-	printf("loop over\n");
-	if (keypointsVector.size() > 0) {
-		if (keypoints[0].pt.x == 0.0) {
-	//		printf("should update keypoints 0\n");
-			keypoints[2] = keypointsVector[0];
-				printf("keypoint 1 added (%f, %f)\n", keypoints[0].pt.x, keypoints[0].pt.y);
 		}
-		if (keypoints[1].pt.x == 0.0) {
-	//		printf("should update keypoints 1\n");
-			keypoints[3] = keypointsVector[1];
-				printf("keypoint 2 added (%f, %f)\n", keypoints[1].pt.x, keypoints[1].pt.y);
-		}
+
+
 	}
-	keypoints[0] = keypoints[2];
-	keypoints[1] = keypoints[3];
-	printf("drum %d\n", drum);
+	//printf("loop over\n");
+
+
+	// if (keypointsVector.size() > 0) {
+	// 	if (keypoints[0].pt.x == 0.0) {
+	// //		printf("should update keypoints 0\n");
+	// 		keypoints[2] = keypointsVector[0];
+	// 			//printf("new keypoint added (%f, %f)\n", keypoints[0].pt.x, keypoints[0].pt.y);
+	// 	}
+	// 	if (keypoints[1].pt.x == 0.0) {
+	// //		printf("should update keypoints 1\n");
+	// 		keypoints[3] = keypointsVector[1];
+	// 			//printf("new keypoint added (%f, %f)\n", keypoints[1].pt.x, keypoints[1].pt.y);
+	// 	}
+	// 	keypoints[0] = keypoints[2];
+	// 	keypoints[1] = keypoints[3];
+	// }
+
+
+
 	return drum;
 }
-
-
+/*
 int main(int argc, char** argv) {
 	if( argc != 6)
 		{
@@ -176,3 +188,4 @@ int main(int argc, char** argv) {
 	waitKey(0);
 
 }
+*/

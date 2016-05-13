@@ -78,15 +78,21 @@ int track(Mat *frame, TrackedPoint trackedPoints[], long frameNum) {
 			resetPoint(&trackedPoints[i]);
 	}
 
-	bool forceMatch = false;
+	vector<int> freeTrackingPoints;
+	set<int> usedKeypoints;
+	vector<int> freeKeyPoints;
+
+	for (int i = 0; i < NUM_PTS; i++) {
+		if (trackedPoints[i].x == 0 && trackedPoints[i].y == 0) {
+			freeTrackingPoints.push_back(i);
+		}
+	}
 
 	//match keypoints to tracked points
 	for (int i = 0; i < NUM_PTS; i++) {
-		//forcematch if trackedpoint is at initial state
-		if (trackedPoints[i].x == 0 && trackedPoints[i].y == 0)
-			forceMatch = true;
 		for (int j = 0; j < keypointsVector.size(); j++) {
-			if (matching(keypointsVector[j], trackedPoints[i]) || forceMatch) {
+			if (matching(keypointsVector[j], trackedPoints[i])) {
+				usedKeypoints.insert(j);
 				//do stuff with matching points
 				float vx, vy, velocitySquared;
 				vx = ((float) (trackedPoints[i].x - keypointsVector[j].pt.x)) / (frameNum - trackedPoints[i].frameNum);
@@ -100,7 +106,7 @@ int track(Mat *frame, TrackedPoint trackedPoints[], long frameNum) {
 					drum = 1;
 				}
 
-				printf("velocity: %f\n", sqrt(velocitySquared));
+				printf("i: %d velocity: %f\n",i,  sqrt(velocitySquared));
 
 
 				//update trackedPoints
@@ -114,12 +120,24 @@ int track(Mat *frame, TrackedPoint trackedPoints[], long frameNum) {
 				trackedPoints[i].vx = vx;
 				trackedPoints[i].vy = vy;
 				trackedPoints[i].frameNum = frameNum;
-
-				if (forceMatch) forceMatch = false;
 			}
 		}
 	}
 
+	//create freeKeyPoints vector
+	for (int j = 0; j < keypointsVector.size(); j++) {
+		if (usedKeypoints.find(j) == usedKeypoints.end())
+			freeKeyPoints.push_back(j);
+	}
+
+	printf("size of freeTrackingPoints: %d\n", freeTrackingPoints.size());
+	printf("size of freeKeyPoints: %d\n", freeKeyPoints.size());
+
+	for (int i = 0; (i < freeTrackingPoints.size()) && (i < freeKeyPoints.size()); i++) {
+		trackedPoints[freeTrackingPoints[i]].x = keypointsVector[freeKeyPoints[i]].pt.x;
+		trackedPoints[freeTrackingPoints[i]].y = keypointsVector[freeKeyPoints[i]].pt.y;
+		trackedPoints[freeTrackingPoints[i]].frameNum = 0;
+	}
 	//printf("drew keypoints\n");
 	return drum;
 }

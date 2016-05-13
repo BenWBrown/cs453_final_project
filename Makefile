@@ -1,7 +1,7 @@
 # Makefile for CS 453
 # compile binary from multiple source files
 
-SRC = main.cpp sound.cpp tracker.cpp
+SRC = main.cpp sound.cpp tracker2.cpp
 BIN = main
 
 CC = g++
