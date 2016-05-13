@@ -16,7 +16,6 @@ const char *win = "video";
 
  int main()
  {
-   SoundPlayer soundPlayer;
 
       long frameNum = 0;
      int cam = 0; // default camera
@@ -37,6 +36,7 @@ const char *win = "video";
        trackedPoints[i].vy = 0;
        trackedPoints[i].frameNum = 0;
        trackedPoints[i].moving = false;
+       trackedPoints[i].angle = 0;
      }
 
      int sound = 0;
@@ -50,15 +50,16 @@ const char *win = "video";
            key = waitKey(30);
            if (sound == 1) {
              printf("tracked\n");
-             printf("\a");
-// soundPlayer.async_play("snare.mp3");
+             //printf("\a");
+
+              async_play("snare.mp3");
             //  printf("\n\n\n\n\n\nPLAY SOUND\n\n\n\n\n\n\n\n");
             //  printf("\a");
            }
            if (key == 106) {
-             soundPlayer.async_play("snare2.mp3");
+             async_play("snare2.mp3");
            } else if (key == 107) {
-             soundPlayer.async_play("snare.mp3");
+             play((void*) "snare.mp3");
            } else if (key >= 0) {
              printf("%d\n", key);
              break;

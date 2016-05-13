@@ -98,8 +98,8 @@ int track(Mat *frame, TrackedPoint trackedPoints[], long frameNum) {
 				vx = ((float) (trackedPoints[i].x - keypointsVector[j].pt.x)) / (frameNum - trackedPoints[i].frameNum);
 				vy = ((float) (trackedPoints[i].y - keypointsVector[j].pt.y)) / (frameNum - trackedPoints[i].frameNum);
 				velocitySquared = vx*vx + vy*vy;
-				
-				angle = atan2(vy, vx);
+
+				float angle = atan2(vy, vx);
 
 				//check if need to play drum sound
 				//went from going fast to going slow
@@ -152,6 +152,7 @@ void resetPoint(TrackedPoint *pt) {
 	pt->vy = 0;
 	pt->frameNum = 0;
 	pt->moving = false;
+	pt->angle = 0;
 }
 
 bool matching(KeyPoint keypoint, TrackedPoint trackedpoint) {
