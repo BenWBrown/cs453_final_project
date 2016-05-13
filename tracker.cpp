@@ -77,7 +77,7 @@ int track(Mat *frame, KeyPoint *keypoints) {
 	vector<KeyPoint> keypointsVector;
 	detector.detect(image, keypointsVector);
 
-	printf("original keypoints (%f, %f,) and (%f, %f)\n", temp1.pt.x, temp1.pt.y, temp2.pt.x, temp2.pt.y);
+	printf("original keypoints (%f, %f, s%f, a%f) and (%f, %f, s%f, a%f)\n", keypoints[0].pt.x, keypoints[0].pt.y, keypoints[0].size, keypoints[0].angle, keypoints[1].pt.x, keypoints[1].pt.y, keypoints[1].size, keypoints[1].angle);
 //	printf("new keypoints (%f, %f,) and (%f, %f) and (%f, %f)\n", keypointsVector[0].pt.x, keypointsVector[0].pt.y, keypointsVector[1].pt.x, keypointsVector[1].pt.y);
 	//
 	//
@@ -99,7 +99,9 @@ int track(Mat *frame, KeyPoint *keypoints) {
 		if (((diff1.x > 1.0) || (diff1.x < -1.0)) && size < 100) {
 			keypoints[2] = KeyPoint(keypointsVector[i].pt, size, angle);
 			printf("* keypoint 1 changed (%f, %f) @ size %f, %f\n", keypoints[0].pt.x, keypoints[0].pt.y, size, angle);
-			if (ABS(angle - keypoints[0].angle) > 1.0){
+			if ((ABS(angle - keypoints[0].angle) > 1.0) && (size > 10.0)){
+				drum = 1;
+			} else if ((keypoints[0].size > 15.0) && (size < 10.0)) {
 				drum = 1;
 			}
 		}
@@ -109,7 +111,9 @@ int track(Mat *frame, KeyPoint *keypoints) {
 		if (((diff2.x > 1.0) || (diff2.x < -1.0)) && size < 100) {
 			keypoints[3] = KeyPoint(keypointsVector[i].pt, size, angle);
 			printf("* keypoint 2 changed (%f, %f) @ size %f, %f\n", keypoints[1].pt.x, keypoints[1].pt.y, size, angle);
-			if (ABS(angle - keypoints[1].angle) > 1.0){
+			if ((ABS(angle - keypoints[1].angle) > 1.0) && (size > 10.0)){
+				drum = 2;
+			} else if ((keypoints[1].size > 15.0) && (size < 10.0)) {
 				drum = 2;
 			}
 		}
