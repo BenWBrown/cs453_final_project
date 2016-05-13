@@ -40,8 +40,8 @@ int main()
 
 	int sound = 0, middle;
 	cap >> frame;
-	middle = frame.cols / 2;
-	
+	middle = frame.cols / 4;
+
 	while (1) {
 		frameNum += 1;
 		cap >> frame;
@@ -64,11 +64,14 @@ int main()
 				async_play("snare.mp3");
 				//  printf("\n\n\n\n\n\nPLAY SOUND\n\n\n\n\n\n\n\n");
 				//  printf("\a");
-			}
+			} else if (sound == 2) {
+
+        async_play("harm.mp3");
+      }
 			if (key == 106) {
-				async_play("snare2.mp3");
+				async_play("snare.mp3");
 			} else if (key == 107) {
-				async_play((void*) "snare.mp3");
+				async_play("harm.mp3");
 			} else if (key >= 0) {
 				printf("%d\n", key);
 				break;
