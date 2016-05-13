@@ -16,9 +16,7 @@ const char *win = "video";
 
  int main()
  {
-   SoundPlayer soundPlayer;
-
-      long frameNum = 0;
+      SoundPlayer soundPlayer;
      int cam = 0; // default camera
      int key;
      VideoCapture cap(cam);
@@ -29,31 +27,18 @@ const char *win = "video";
      namedWindow(win, 0);
 
      Mat frame;
-     TrackedPoint trackedPoints[NUM_PTS];
-     for (int i = 0; i < 2; i++) {
-       trackedPoints[i].x = 0;
-       trackedPoints[i].y = 0;
-       trackedPoints[i].vx = 0;
-       trackedPoints[i].vy = 0;
-       trackedPoints[i].frameNum = 0;
-       trackedPoints[i].moving = false;
-     }
+     KeyPoint keypoints[4];
+   	keypoints[0].pt.x = 0.0;
+   	keypoints[1].pt.x = 0.0;
 
-     int sound = 0;
+     int sound;
      while (1) {
-       frameNum += 1;
          cap >> frame;
          if (!frame.empty()) {
            //TODO: convert to grayscale
-           sound = track(&frame, trackedPoints, frameNum);
+           sound = track(&frame, keypoints);
            imshow(win, frame);
            key = waitKey(30);
-           if (sound == 1) {
-             printf("tracked\n");
-soundPlayer.async_play("snare.mp3");
-            //  printf("\n\n\n\n\n\nPLAY SOUND\n\n\n\n\n\n\n\n");
-            //  printf("\a");
-           }
            if (key == 106) {
              soundPlayer.async_play("snare2.mp3");
            } else if (key == 107) {

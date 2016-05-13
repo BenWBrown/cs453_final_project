@@ -83,8 +83,6 @@ void *SoundPlayer::play(void *uncastName) {
   mpg123_getformat(mh, &rate, &channels, &encoding);
 
 /* set the output format and open the output device */
-
-  printf("about to encode\n");
   format.bits = mpg123_encsize(encoding) * BITS;
   format.rate = rate;
   format.channels = channels;
@@ -92,10 +90,8 @@ void *SoundPlayer::play(void *uncastName) {
   format.matrix = "L,R";
   dev = ao_open_live(driver, &format, NULL);
 
-  printf("about to play\n");
-
-  while (mpg123_read(mh, buffers[lastBuffer], buffer_size, &done) == MPG123_OK)
-    ao_play(dev, (char *) buffers[lastBuffer], done);
+  mpg123_read(mh, buffers[lastBuffer], buffer_size, &done);
+  ao_play(dev, (char *) buffers[lastBuffer], done);
 
   /*************************************************/
 
