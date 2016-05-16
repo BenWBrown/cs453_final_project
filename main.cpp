@@ -15,6 +15,8 @@ using namespace cv;
 using namespace std;
 
 const char *win = "video";
+const char *sound1 = "snare.mp3";
+const char *sound2 = "harm.mp3";
 
 int main()
 {
@@ -26,14 +28,13 @@ int main()
 		fprintf(stderr, "cannot open camera %d\n", cam);
 		exit(1);
 	}
+	Mat frame;				// video capture frame
 	namedWindow(win, 0);			// video display window
-	int sound = 0				// 0: no sound, 1: play sound 1, 2: play sound 2
+	int sound = 0;				// 0: no sound, 1: play sound 1, 2: play sound 2
 	int middle;				// x-coordinate to draw screen dividing line
 	cap >> frame;
 	middle = frame.cols / 4;
 
-
-	Mat frame;				// video capture frame
 	TrackedPoint trackedPoints[NUM_PTS];	// array of tracked drumstick ends
 	for (int i = 0; i < 2; i++) {
 		trackedPoints[i].x = 0;
@@ -61,15 +62,17 @@ int main()
 			imshow(win, frame);
 			key = waitKey(5);
 			if (sound == 1) {
-				printf("tracked\n");
-				async_play("snare.mp3");
+				//printf("tracked\n");
+				async_play(sound1);
 			} else if (sound == 2) {
-				async_play("harm.mp3");
+				async_play(sound2);
 			}
-			if (key == 106) {
-				async_play("snare.mp3");
-			} else if (key == 107) {
-				async_play("harm.mp3");
+
+			//debug functionality: play sounds on key press
+			if (key == 106) { // J key
+				async_play(sound1);
+			} else if (key == 107) { // K key
+				async_play(sound2);
 			} else if (key >= 0) {
 				printf("%d\n", key);
 				break;

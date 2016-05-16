@@ -2,7 +2,7 @@
  *
  * Ben Brown, Dylan Quenneville, Max Shashoua
  *
- * Based on Johnny Huang's Code at 
+ * Based on Johnny Huang's Code at
  * http://hzqtc.github.io/2012/05/play-mp3-with-libmpg123-and-libao.html
  */
 
@@ -69,7 +69,7 @@ void *play(void *uncastName) {
 }
 
 // play audio in asynchronous thread to keep video loop playing
-void async_play(char *name) {
+void async_play(const char *name) {
   pthread_t thread;
   pthread_create(&thread, NULL, play, (void *) name);
 }

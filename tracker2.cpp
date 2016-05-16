@@ -87,11 +87,11 @@ int track(Mat *frame, TrackedPoint trackedPoints[], long frameNum) {
 	// new object)
 	for (int i = 0; i < NUM_PTS; i++) {
 		if ((trackedPoints[i].frameNum != 0) && (frameNum - trackedPoints[i].frameNum > FRAME_THRESH)) {
-			printf("frameNum: %lu\n", frameNum);
-			printf("trackedPoints[i].frameNum : %lu\n", trackedPoints[i].frameNum );
-			printf("about to reset\n x: %d\n", trackedPoints[i].x);
+			// printf("frameNum: %lu\n", frameNum);
+			// printf("trackedPoints[i].frameNum : %lu\n", trackedPoints[i].frameNum );
+			// printf("about to reset\n x: %d\n", trackedPoints[i].x);
 			resetPoint(&trackedPoints[i]);
-			printf("x: %d\n", trackedPoints[i].x);
+			//printf("x: %d\n", trackedPoints[i].x);
 		}
 	}
 
@@ -111,7 +111,7 @@ int track(Mat *frame, TrackedPoint trackedPoints[], long frameNum) {
 
 	// Match keypoints to tracked points
 	for (int i = 0; i < NUM_PTS; i++) {
-		for (int j = 0; j < keypointsVector.size(); j++) {
+		for (int j = 0; j < (long long) keypointsVector.size(); j++) {
 			if (matching(keypointsVector[j], trackedPoints[i])) {
 				usedKeypoints.insert(j);
 				// calculate velocity based on previous frame's tracked keypoints
@@ -126,15 +126,15 @@ int track(Mat *frame, TrackedPoint trackedPoints[], long frameNum) {
 				// (Either went from going fast to going slow or significant change in angle)
 				if (trackedPoints[i].moving && (velocitySquared < LO_THRESH*LO_THRESH) ) {
 					if (trackedPoints[i].x < frame->cols/2) {
-						printf("drum = 1");
+						//printf("drum = 1");
 						drum = 1;
 					} else {
-						printf("drum = 2");
+						//printf("drum = 2");
 						drum = 2;
 					}
 				}
 
-				printf("i: %d velocity: %f\n",i,  sqrt(velocitySquared));
+				//printf("i: %d velocity: %f\n",i,  sqrt(velocitySquared));
 
 
 				// Update trackedPoints based on new locations
@@ -155,15 +155,18 @@ int track(Mat *frame, TrackedPoint trackedPoints[], long frameNum) {
 
 	// Create freeKeyPoints vector
 	// Used to find new drumstick ends when old ends are no longer found
-	for (int j = 0; j < keypointsVector.size(); j++) {
+	for (int j = 0; j < (long long) keypointsVector.size(); j++) {
 		if (usedKeypoints.find(j) == usedKeypoints.end())
 			freeKeyPoints.push_back(j);
 	}
 
-	printf("size of freeTrackingPoints: %d\n", freeTrackingPoints.size());
-	printf("size of freeKeyPoints: %d\n", freeKeyPoints.size());
+	// printf("size of freeTrackingPoints: %d\n", freeTrackingPoints.size());
+	// printf("size of freeKeyPoints: %d\n", freeKeyPoints.size());
 
-	for (int i = 0; (i < freeTrackingPoints.size()) && (i < freeKeyPoints.size()); i++) {
+	long long trackingPointsSize = (long long) freeTrackingPoints.size();
+	long long keyPointsSize = (long long) freeKeyPoints.size();
+
+	for (int i = 0; (i < trackingPointsSize) && (i < keyPointsSize); i++) {
 		trackedPoints[freeTrackingPoints[i]].x = keypointsVector[freeKeyPoints[i]].pt.x;
 		trackedPoints[freeTrackingPoints[i]].y = keypointsVector[freeKeyPoints[i]].pt.y;
 		trackedPoints[freeTrackingPoints[i]].frameNum = 0;
