@@ -2,7 +2,7 @@
  *
  * Ben Brown, Dylan Quenneville, Max Shashoua
  *
- * Based on Johnny Huang's Code at
+ * Based on (copied almost exactly from) Johnny Huang's Code at
  * http://hzqtc.github.io/2012/05/play-mp3-with-libmpg123-and-libao.html
  */
 
@@ -12,7 +12,6 @@
 #include <iostream>
 #include <pthread.h>
 #include <string>
-#include <map>
 #include <vector>
 
 #define BITS 8
@@ -68,7 +67,7 @@ void *play(void *uncastName) {
 	return 0;
 }
 
-// play audio in asynchronous thread to keep video loop playing
+// spawn new thread to play audio so that main thread (playing video) is not blocked
 void async_play(const char *name) {
   pthread_t thread;
   pthread_create(&thread, NULL, play, (void *) name);

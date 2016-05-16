@@ -46,6 +46,7 @@ int main()
 		trackedPoints[i].angle = 0;
 	}
 
+	//main run loop
 	while (1) {
 		frameNum += 1;			// increase frame count
 		cap >> frame;			// capture next video frame
@@ -73,7 +74,9 @@ int main()
 				async_play(sound1);
 			} else if (key == 107) { // K key
 				async_play(sound2);
-			} else if (key >= 0) {
+			}
+			//quit loop on other key press
+			else if (key >= 0) {
 				printf("%d\n", key);
 				break;
 			}
@@ -81,9 +84,5 @@ int main()
 	}
 	imwrite("frame.png", frame);
 
-	//TODO: this segfaults. idk why
-	//soundPlayer.clean();
-
 	return 0;
-
 }
