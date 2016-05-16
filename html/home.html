@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>CS 453 Final Project</title>
+  </head>
+  <body>
+    <h1> CCS453 Computer Vision Spring 2016 Final Project:</h1>
+    <h1>Air-drumming through Video Object-detection</h1>
+    <h4>Ben Brown, Dylan Quenneville, Max Shashoua</h4>
+
+    <h2>Goals</h2>
+    <p>The immediate inclination was to combine computer vision with music. We considered reading sheet-music, live tracking guitar fingerings, and live tracking drum set playing, and settled on the last of these options as the most attainable. The program we created tracks two drumsticks through live webcam video and plays sounds based on simulated air-drumming “hits”.</p>
+    <p>The prototype we implemented requires having drumsticks with ping pong balls covered in bright orange tape attached to the ends. Our stretch goal was to create a program that did not require special hardware.</p>
+
+    <h2>Approach</h2>
+    <p>Initial strategies for drumstick tracking included image-differencing to find local movement and interpreting stick motion according. Alternatively, we considered machine-learning and object-detection to find velocity from frame to frame. For input, we used OpenCV’s VideoCapture class. With this, we could continuously capture frames from a webcam as Mat objects and use as input to filtering and tracking algorithms.</p>
+
+    <h2>Hardware</h2>
+    <p>Inspired by chroma-key body suits with white motion-tracking balls, we decided it would be most practical to put balls on the end of drumsticks and chose orange for its brightness and relative uniqueness (not a lot of rooms have bright orange walls). We taped ping pong balls to the ends of two drumsticks and covered the balls with orange tape.</p>
+
+    <img></img> <!--TODO: INSERT IMAGE HERE -->
+
+    
+
+  </body>
+</html>
