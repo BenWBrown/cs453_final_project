@@ -1,6 +1,8 @@
-/* showvideo.cpp - display video in window
+/* main.cpp - get video, track drumsticks, play sound
  *
- * CS 453 openCV demo
+ * CS 453 Final Project - airdrums through video
+ *
+ * Ben Brown, Dylan Quenneville, Max Shashoua
  */
 
 #include <stdio.h>
@@ -16,18 +18,23 @@ const char *win = "video";
 
 int main()
 {
-	long frameNum = 0;
-	int cam = 0; // default camera
-	int key;
-	VideoCapture cap(cam);
-	if (!cap.isOpened()) {
+	long frameNum = 0;			// counter for frames passed in main video loop
+	int cam = 0; 				// default camera
+	int key;   				// keyboard input ID
+	VideoCapture cap(cam);			// OpenCV VideoCapture for getting webcam video
+	if (!cap.isOpened()) {			// check that video is working
 		fprintf(stderr, "cannot open camera %d\n", cam);
 		exit(1);
 	}
-	namedWindow(win, 0);
+	namedWindow(win, 0);			// video display window
+	int sound = 0				// 0: no sound, 1: play sound 1, 2: play sound 2
+	int middle;				// x-coordinate to draw screen dividing line
+	cap >> frame;
+	middle = frame.cols / 4;
 
-	Mat frame;
-	TrackedPoint trackedPoints[NUM_PTS];
+
+	Mat frame;				// video capture frame
+	TrackedPoint trackedPoints[NUM_PTS];	// array of tracked drumstick ends
 	for (int i = 0; i < 2; i++) {
 		trackedPoints[i].x = 0;
 		trackedPoints[i].y = 0;
@@ -38,16 +45,12 @@ int main()
 		trackedPoints[i].angle = 0;
 	}
 
-	int sound = 0, middle;
-	cap >> frame;
-	middle = frame.cols / 4;
-
 	while (1) {
-		frameNum += 1;
-		cap >> frame;
+		frameNum += 1;			// increase frame count
+		cap >> frame;			// capture next video frame
 		if (!frame.empty()) {
-			//TODO: convert to grayscale
-			sound = track(&frame, trackedPoints, frameNum);
+			sound = track(&frame, trackedPoints, frameNum); // determine is sound should be played
+			// draw line in center of frame to divide between 2 drum sounds
 			for (int i = 0; i < frame.rows; i++) {
 				for (int j = middle-1; j < middle+2; j++) {
 					frame.at<Vec3b>(i, j)[0] = 150;
@@ -59,15 +62,10 @@ int main()
 			key = waitKey(5);
 			if (sound == 1) {
 				printf("tracked\n");
-				//printf("\a");
-
 				async_play("snare.mp3");
-				//  printf("\n\n\n\n\n\nPLAY SOUND\n\n\n\n\n\n\n\n");
-				//  printf("\a");
 			} else if (sound == 2) {
-
-        async_play("harm.mp3");
-      }
+				async_play("harm.mp3");
+			}
 			if (key == 106) {
 				async_play("snare.mp3");
 			} else if (key == 107) {
@@ -77,7 +75,6 @@ int main()
 				break;
 			}
 		}
-
 	}
 	imwrite("frame.png", frame);
 
@@ -86,19 +83,4 @@ int main()
 
 	return 0;
 
- }
-
-// int main() {
-//   printf("playing\n");
-//   async_play("snare.mp3");
-//   usleep(500000);
-//   async_play("snare2.mp3");
-//   usleep(500000);
-//   async_play("snare3.mp3");
-//   usleep(500000);
-//   async_play("snare4.mp3");
-//
-//   usleep(3000000);
-//   printf("done sleeping\n");
-//   return 0;
-// }
+}

@@ -1,7 +1,16 @@
+/* tracker.cpp
+ * 
+ * CS 453 Final Project - video-powered air-drums
+ *
+ * original tracker (abandoned in favor of tracker2.cpp)
+ *
+ * Ben Brown, Dylan Quenneville, Max Shashoua
+ */
+
+
 #include <stdio.h>
 #include "opencv2/opencv.hpp"
 #include "opencv2/features2d/features2d.hpp"
-//#include "sound.h"
 #include <unistd.h>
 #include "tracker.h"
 #include <stdlib.h>
@@ -13,8 +22,6 @@ int track(Mat *frame, KeyPoint *keypoints) {
 	Point2f diff1, diff2;
 	float size, angle;
 	Mat image, big;
-	int ballz;
-	ballz = 2;
 
 	//Mat img = imread("ball1.jpg", 1); //testing image
 
@@ -68,20 +75,30 @@ int track(Mat *frame, KeyPoint *keypoints) {
 
 	//SimpleBlobDetector detector;
 
-	//
 	vector<KeyPoint> keypointsVector;
 	detector.detect(image, keypointsVector);
 
 	//printf("original keypoints (%f, %f,) and (%f, %f)\n", temp1.pt.x, temp1.pt.y, temp2.pt.x, temp2.pt.y);
 //	printf("new keypoints (%f, %f,) and (%f, %f) and (%f, %f)\n", keypointsVector[0].pt.x, keypointsVector[0].pt.y, keypointsVector[1].pt.x, keypointsVector[1].pt.y);
-	//
-	//
+
 	drawKeypoints(image, keypointsVector, *frame, Scalar(0,0,255), DrawMatchesFlags::DRAW_RICH_KEYPOINTS );
 
+	imwrite("frame.jpg", *frame);
+	
+	int middle = frame->cols / 2;
+	if (1) {
+	for (int i = 0; i < frame->rows; i++) {
+		for (int j = middle-1; j < middle+2; j++) {
+			frame->at<Vec3b>(i, j)[0] = 150;
+			frame->at<Vec3b>(i, j)[1] = 0;
+			frame->at<Vec3b>(i, j)[2] = 0;
+		}
+	}
+	}
 	//printf("drew keypoints\n");
 
 	int drum = 0;
-	int oldAngle0, oldAngle1;
+	float oldAngle0, oldAngle1;
 
 	oldAngle0 = keypoints[0].angle;
 	oldAngle1 = keypoints[1].angle;
@@ -151,7 +168,8 @@ int track(Mat *frame, KeyPoint *keypoints) {
 
 	return drum;
 }
-/*
+
+// main function for testing (comment out for use within main.cpp
 int main(int argc, char** argv) {
 	if( argc != 6)
 		{
@@ -188,4 +206,3 @@ int main(int argc, char** argv) {
 	waitKey(0);
 
 }
-*/

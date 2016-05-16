@@ -1,3 +1,14 @@
+/* tracker.cpp - track drumstick locations and movement from previous frame
+ *
+ * CS 453 Final Project - airdrums through video
+ *
+ * Ben Brown, Dylan Quenneville, Max Shashoua
+ *
+ * Based on code by Satya Mallick
+ * http://www.learningopencv.com/blob-detection-using-opencv-python-c/
+ *
+ */
+
 #include <stdio.h>
 #include "opencv2/opencv.hpp"
 #include "opencv2/features2d/features2d.hpp"
@@ -12,31 +23,31 @@ using namespace std;
 void resetPoint(TrackedPoint *pt);
 bool matching(KeyPoint keypoint, TrackedPoint trackedpoint);
 
+// track motion of drumsticks in new frame from tracked points in previous frame
 int track(Mat *frame, TrackedPoint trackedPoints[], long frameNum) {
 	Mat image, big;
 	int drum = 0;
 
-	// blur img
+	// Blur image
 	blur(*frame, big, Size(75, 75));
 
+	// Resize image for faster tracking
 	resize(big, image, Size(round(0.5*big.cols), round(0.5*big.rows)), 0.5, 0.5);
+	resize(*frame, *frame, Size(round(0.5*big.cols), round(0.5*big.rows)), 0.5, 0.5);
 
-	// convert image to HSV
+	// Convert image to HSV
 	cvtColor(image, image, COLOR_BGR2HSV);
 	Mat lower_red_hue_range, upper_red_hue_range;
 	inRange(image, Scalar(0, 100, 100), Scalar(10, 255, 255), lower_red_hue_range);
 	inRange(image, Scalar(160, 100, 100), Scalar(179, 255 ,255), upper_red_hue_range);
+	// Create black-and-white image isolating orange regions
 	addWeighted(lower_red_hue_range, 1.0, upper_red_hue_range, 1.0, 0.0, image);
 
-
-	image.convertTo(image, -1, -1, 255); // rtype=-1 (same result type), scale=-1, offset=255
+	// Invert image for use by SimpleBlobDetector
+	image.convertTo(image, -1, -1, 255);
 
 	// Setup SimpleBlobDetector parameters.
 	SimpleBlobDetector::Params params;
-
-	// Change thresholds
-	//params.minThreshold = 10;
-	//params.maxThreshold = 200;
 
 	// Filter by Area.
 	params.filterByArea = true;
@@ -54,26 +65,26 @@ int track(Mat *frame, TrackedPoint trackedPoints[], long frameNum) {
 	params.filterByInertia = true;
 	params.minInertiaRatio = 0.01;
 
-
 	// Set up detector with params
 	SimpleBlobDetector detector(params);
 
-
+	// Set up vector to store blob detector results
 	vector<KeyPoint> keypointsVector;
 	detector.detect(image, keypointsVector);
 
-		resize(*frame, *frame, Size(round(0.5*big.cols), round(0.5*big.rows)), 0.5, 0.5);
+	// Draw detected points on frame for user viewing
 	drawKeypoints(*frame, keypointsVector, *frame, Scalar(0,0,255), DrawMatchesFlags::DRAW_RICH_KEYPOINTS );
 
-	//debug output
+	// Debug output
 	// if (keypointsVector.size() > 0)
 	// 	printf("\nframeNum: %lu  keyPoints:", frameNum);
 	// for (int i=0;i<keypointsVector.size();i++) {
 	// 	printf("kp: ((%f, %f))\n",keypointsVector[i].pt.x, keypointsVector[i].pt.y);
 	// }
 
-	//check if previously seen blob hasn't been seen in over FRAME_THRESH frames
-	//and reset it if so
+	// Check if previously seen blob hasn't been seen in over FRAME_THRESH frames
+	// and reset it if so (clean up room for a significantly displace drumstick or
+	// new object)
 	for (int i = 0; i < NUM_PTS; i++) {
 		if ((trackedPoints[i].frameNum != 0) && (frameNum - trackedPoints[i].frameNum > FRAME_THRESH)) {
 			printf("frameNum: %lu\n", frameNum);
@@ -98,12 +109,12 @@ int track(Mat *frame, TrackedPoint trackedPoints[], long frameNum) {
 		resetPoint(&trackedPoints[1]);
 	}
 
-	//match keypoints to tracked points
+	// Match keypoints to tracked points
 	for (int i = 0; i < NUM_PTS; i++) {
 		for (int j = 0; j < keypointsVector.size(); j++) {
 			if (matching(keypointsVector[j], trackedPoints[i])) {
 				usedKeypoints.insert(j);
-				//do stuff with matching points
+				// calculate velocity based on previous frame's tracked keypoints
 				float vx, vy, velocitySquared;
 				vx = ((float) (trackedPoints[i].x - keypointsVector[j].pt.x)) / (frameNum - trackedPoints[i].frameNum);
 				vy = ((float) (trackedPoints[i].y - keypointsVector[j].pt.y)) / (frameNum - trackedPoints[i].frameNum);
@@ -111,8 +122,8 @@ int track(Mat *frame, TrackedPoint trackedPoints[], long frameNum) {
 
 				float angle = atan2(vy, vx);
 
-				//check if need to play drum sound
-				//went from going fast to going slow
+				// Check if need to play drum sound
+				// (Either went from going fast to going slow or significant change in angle)
 				if (trackedPoints[i].moving && (velocitySquared < LO_THRESH*LO_THRESH) ) {
 					if (trackedPoints[i].x < frame->cols/2) {
 						printf("drum = 1");
@@ -126,7 +137,7 @@ int track(Mat *frame, TrackedPoint trackedPoints[], long frameNum) {
 				printf("i: %d velocity: %f\n",i,  sqrt(velocitySquared));
 
 
-				//update trackedPoints
+				// Update trackedPoints based on new locations
 				if (velocitySquared > HI_THRESH*HI_THRESH) {
 					trackedPoints[i].moving = true;
 				} else if (velocitySquared < LO_THRESH*LO_THRESH) {
@@ -142,7 +153,8 @@ int track(Mat *frame, TrackedPoint trackedPoints[], long frameNum) {
 		}
 	}
 
-	//create freeKeyPoints vector
+	// Create freeKeyPoints vector
+	// Used to find new drumstick ends when old ends are no longer found
 	for (int j = 0; j < keypointsVector.size(); j++) {
 		if (usedKeypoints.find(j) == usedKeypoints.end())
 			freeKeyPoints.push_back(j);
@@ -156,10 +168,10 @@ int track(Mat *frame, TrackedPoint trackedPoints[], long frameNum) {
 		trackedPoints[freeTrackingPoints[i]].y = keypointsVector[freeKeyPoints[i]].pt.y;
 		trackedPoints[freeTrackingPoints[i]].frameNum = 0;
 	}
-	//printf("drew keypoints\n");
-	return drum;
+	return drum;		// Return drum ID (0: no play, 1: play sound #1, 2: play sound #2)
 }
 
+// Reset tracked point value
 void resetPoint(TrackedPoint *pt) {
 	pt->x = 0;
 	pt->y = 0;
@@ -170,6 +182,7 @@ void resetPoint(TrackedPoint *pt) {
 	pt->angle = 0;
 }
 
+// Determine if new keypoint is within range to be matched with previously tracked point
 bool matching(KeyPoint keypoint, TrackedPoint trackedpoint) {
 	long dist_sq = (keypoint.pt.x - trackedpoint.x)*(keypoint.pt.x - trackedpoint.x)
 							 + (keypoint.pt.y - trackedpoint.y)*(keypoint.pt.y - trackedpoint.y);
